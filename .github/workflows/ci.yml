@@ -8,7 +8,6 @@ on:
 
 jobs:
   matrix-pip:
-    name: Train and Save the model
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,16 +22,27 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python }}
+
       - name: Upgrade pip
         run: python -m pip install --upgrade pip setuptools wheel
 
-      - name: Install project dependencies
-        run: python -m pip install -r hello-world-mlops/requirements.txt
+      - name: Install dependencies
+        working-directory: hello-world-mlops
+        run: python -m pip install -r requirements.txt
 
-      - name: Train the model
+      - name: Debug files
+        run: ls -R
+
+      - name: Train model
+        working-directory: hello-world-mlops
         run: |
-          python hello-world-mlops/train.py
-          ls -la hello-world-mlops/artifacts
+          python train.py
+          ls -la artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
